@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "CozyAtumnCharacter.h"
+
+#include "AbilitySystemComponent.h"
 #include "CozyAtumnProjectile.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
@@ -10,6 +12,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Engine/LocalPlayer.h"
+#include "Stats/CozyPlayerAttributeSetBase.h"
+
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -18,9 +22,6 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 ACozyAtumnCharacter::ACozyAtumnCharacter()
 {
-	// Character doesnt have a rifle at start
-	bHasRifle = false;
-	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 		
@@ -30,15 +31,8 @@ ACozyAtumnCharacter::ACozyAtumnCharacter()
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); // Position the camera
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
-	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
-	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
-	Mesh1P->SetOnlyOwnerSee(true);
-	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
-	Mesh1P->bCastDynamicShadow = false;
-	Mesh1P->CastShadow = false;
-	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
-	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
-
+	AbilitySystemComp = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem Comp"));
+	AttributeSerBaseComp = CreateDefaultSubobject<UCozyPlayerAttributeSetBase>(TEXT("Attribute Base"));
 }
 
 void ACozyAtumnCharacter::BeginPlay()
@@ -46,6 +40,13 @@ void ACozyAtumnCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	if(IsValid(AbilitySystemComp))
+	{
+		AbilitySystemComp->GetGameplayAttributeValueChangeDelegate(AttributeSerBaseComp->GetEnergyAttribute()).AddUObject(this,&ACozyAtumnCharacter::OnEnergyChange);
+		AbilitySystemComp->GetGameplayAttributeValueChangeDelegate(AttributeSerBaseComp->GetMaxEnergyAttribute()).AddUObject(this,&ACozyAtumnCharacter::OnMaxEnergyChange);
+		AbilitySystemComp->GetGameplayAttributeValueChangeDelegate(AttributeSerBaseComp->GetMaxCarryWeightAttribute()).AddUObject(this,&ACozyAtumnCharacter::OnMaxWeightChange);
+		AbilitySystemComp->GetGameplayAttributeValueChangeDelegate(AttributeSerBaseComp->GetMovementSpeedAttribute()).AddUObject(this,&ACozyAtumnCharacter::OnMovementSpeedChange);
+	}
 	// Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -64,10 +65,6 @@ void ACozyAtumnCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACozyAtumnCharacter::Move);
 
@@ -79,6 +76,7 @@ void ACozyAtumnCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
 }
+
 
 
 void ACozyAtumnCharacter::Move(const FInputActionValue& Value)
@@ -107,12 +105,32 @@ void ACozyAtumnCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void ACozyAtumnCharacter::SetHasRifle(bool bNewHasRifle)
+///////Reps/////////
+/////--------------------------------------------------------------------------
+void ACozyAtumnCharacter::OnEnergyChange(const FOnAttributeChangeData& Data)
 {
-	bHasRifle = bNewHasRifle;
+	const float CurrentEnergy = AbilitySystemComp->GetNumericAttribute(UCozyPlayerAttributeSetBase::GetEnergyAttribute());
 }
 
-bool ACozyAtumnCharacter::GetHasRifle()
+void ACozyAtumnCharacter::OnMaxEnergyChange(const FOnAttributeChangeData& Data)
 {
-	return bHasRifle;
+	const float CurrentMaxEnergy = AbilitySystemComp->GetNumericAttribute(UCozyPlayerAttributeSetBase::GetMaxEnergyAttribute());
 }
+
+void ACozyAtumnCharacter::OnMaxWeightChange(const FOnAttributeChangeData& Data)
+{
+	const float CurrentMaxCarry = AbilitySystemComp->GetNumericAttribute(UCozyPlayerAttributeSetBase::GetMaxCarryWeightAttribute());
+}
+
+void ACozyAtumnCharacter::OnMovementSpeedChange(const FOnAttributeChangeData& Data)
+{
+	const float CurrentMovementSpeed = AbilitySystemComp->GetNumericAttribute(UCozyPlayerAttributeSetBase::GetMovementSpeedAttribute());
+}
+
+
+//--------------------------------------------------------------------------
+UAbilitySystemComponent* ACozyAtumnCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComp;
+}
+
