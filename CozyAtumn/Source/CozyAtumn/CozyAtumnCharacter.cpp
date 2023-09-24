@@ -12,6 +12,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Engine/LocalPlayer.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Stats/CozyPlayerAttributeSetBase.h"
 
 
@@ -125,6 +126,14 @@ void ACozyAtumnCharacter::OnMaxWeightChange(const FOnAttributeChangeData& Data)
 void ACozyAtumnCharacter::OnMovementSpeedChange(const FOnAttributeChangeData& Data)
 {
 	const float CurrentMovementSpeed = AbilitySystemComp->GetNumericAttribute(UCozyPlayerAttributeSetBase::GetMovementSpeedAttribute());
+	if(GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow,
+			FString::Printf(TEXT("World delta for current frame equals %f"), CurrentMovementSpeed));
+	
+	if(IsValid(GetCharacterMovement()))
+	{
+		GetCharacterMovement()->MaxWalkSpeed = CurrentMovementSpeed;
+	}
 }
 
 
