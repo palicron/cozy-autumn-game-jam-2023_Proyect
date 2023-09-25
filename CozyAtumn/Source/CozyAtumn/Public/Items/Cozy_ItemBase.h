@@ -22,8 +22,15 @@ public:
 	ACozy_ItemBase();
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	
 protected:
-	// Called when the game starts or when spawned
+
+	UPROPERTY(VisibleAnywhere)
+	int32 Item_ID;
+
+	UPROPERTY(VisibleAnywhere)
+	ItemType Itemtype;
+	
 	virtual void BeginPlay() override;
 
 	UPROPERTY()
@@ -44,6 +51,18 @@ protected:
 
 public:	
 
+	UFUNCTION(BlueprintCallable)
+	int32 GetItemId() const { return Item_ID; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetItemId(int32 newId) { Item_ID = newId; }
+
+	UFUNCTION(BlueprintCallable)
+	ItemType GetItemType() const { return Itemtype; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetItemType(ItemType newType) { Itemtype = newType; }
+	
 	UPROPERTY(BlueprintAssignable)
 	FOnItemInfoBaseChangeSignature OnItemInfoBaseChangeDelegate;
 	
