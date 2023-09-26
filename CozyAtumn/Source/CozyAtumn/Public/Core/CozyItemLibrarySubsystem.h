@@ -7,6 +7,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "CozyItemLibrarySubsystem.generated.h"
 
+class UCozy_GameInstance;
 /**
  * 
  */
@@ -17,10 +18,18 @@ class COZYATUMN_API UCozyItemLibrarySubsystem : public UGameInstanceSubsystem
 
 public:
 
+	
+	void Initialize(FSubsystemCollectionBase& Collection) override;
+	
 	UFUNCTION(BlueprintCallable)
-	bool GetItemInformationById(const int32 ItemId, FItemDescription& OutInformation) const;
+	bool GetItemInformationById(const int32 ItemId, const ItemType Type, FItemInfoBase& OutInformation) const;
 
 	UFUNCTION(BlueprintCallable)
 	bool GetItemInformationByCombination(const TArray<int32> ItemIdList, FItemDescription& OutInformation) const;
+
+protected:
+
+	UPROPERTY()
+	UCozy_GameInstance* GameInstanceRef;
 	
 };

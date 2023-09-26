@@ -19,6 +19,15 @@ struct FMaterialStore
 	int32 ItemId;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Information")
 	int32 ItemsCount = 0;
+	
+	FMaterialStore():ItemId(0),ItemsCount(0)
+	{
+		
+	}
+	FMaterialStore(const int32 NewId,const int32 NEwCount):ItemId(NewId),ItemsCount(NEwCount)
+	{
+	}
+	
 };
 
 USTRUCT(BlueprintType)
@@ -100,10 +109,19 @@ struct FItemInfoBase
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Information")
 	TArray<FMaterialStore> CurrentStoreItems;
-
-	void AddNewMaterial(const int32 newMaterial)
+	
+	FORCEINLINE void operator+=(int NewId)
 	{
-		
+		for (FMaterialStore& StoreMaterial : CurrentStoreItems)
+		{
+			if(StoreMaterial.ItemId == NewId)
+			{
+				StoreMaterial.ItemsCount++;
+				return;
+			}
+		}
+		const FMaterialStore NewMaterial = FMaterialStore(NewId,1);
+		CurrentStoreItems.Add(NewMaterial);
 	}
 };
 

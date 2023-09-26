@@ -8,6 +8,8 @@
 #include "GameFramework/Actor.h"
 #include "Cozy_ItemBase.generated.h"
 
+class UCozyItemLibrarySubsystem;
+class UWidgetComponent;
 class UCozyItemsAttributesBase;
 class UStaticMeshComponent;
 
@@ -25,16 +27,19 @@ public:
 	
 protected:
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	int32 Item_ID;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	ItemType Itemtype;
 	
 	virtual void BeginPlay() override;
 
 	UPROPERTY()
 	FItemInfoBase CurrentItemInfo;
+
+	UPROPERTY(BlueprintReadOnly)
+	UCozyItemLibrarySubsystem* ItemsLibraryRef;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category= "Item Mesh")
 	USceneComponent* ItemRoot;
@@ -45,8 +50,14 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Actor Abilitys")
 	UAbilitySystemComponent* AbilitySystemComp;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Actor UI")
+	UWidgetComponent* WidgetComponent;
+
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category="Actor Abilitys")
 	UCozyItemsAttributesBase* AttributeSerBaseComp;
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateItemInformation();
 	
 
 public:	

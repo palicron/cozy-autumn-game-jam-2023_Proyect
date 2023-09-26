@@ -4,6 +4,8 @@
 #include "Items/Cozy_ItemBase.h"
 
 #include "AbilitySystemComponent.h"
+#include "Core/CozyItemLibrarySubsystem.h"
+#include "Kismet/GameplayStatics.h"
 #include "Stats/CozyItemsAttributesBase.h"
 
 // Sets default values
@@ -33,7 +35,8 @@ UAbilitySystemComponent* ACozy_ItemBase::GetAbilitySystemComponent() const
 void ACozy_ItemBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	ItemsLibraryRef = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UCozyItemLibrarySubsystem>();
+	UpdateItemInformation();
 }
 
 // Called every frame
@@ -42,4 +45,13 @@ void ACozy_ItemBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
+
+void ACozy_ItemBase::UpdateItemInformation()
+{
+	if(IsValid(ItemsLibraryRef) && ItemsLibraryRef->GetItemInformationById(Item_ID,Itemtype,CurrentItemInfo))
+	{
+		OnItemInfoBaseChangeDelegate.Broadcast(CurrentItemInfo);
+	}
+}
+
 

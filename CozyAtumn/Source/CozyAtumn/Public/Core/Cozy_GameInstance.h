@@ -20,6 +20,10 @@ public:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Category="Itemes Information")
 	TMap<ItemType,UDataTable*> ItemsInformation;
 
+	virtual void Init() override;
+
+	UDataTable* GetDataTableByType(ItemType Type) const;
+
 
 	
 };
